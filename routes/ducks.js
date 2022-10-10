@@ -1,11 +1,12 @@
 const router = require("express").Router();
+const { duckModel } = require("../db");
 
-const ducks = [{
-    name: "Daffy",
-    colour: "black"
-}];
+// const ducks = [{
+//     name: "Daffy",
+//     colour: "black"
+// }];
 
-router.get("/getAllDucks", (req, res) => res.send(ducks));
+router.get("/getAllDucks", (req, res) => duckModel.find({}).then(results => res.send(results)).catch(err => next(err)));
 
 
 router.get("/getDuck/:id", (req, res, next) => {
@@ -21,8 +22,7 @@ const deleteMiddleware = (req, res, next) => {
 
 router.post("/createDuck", (req, res, next) => {
     if (!req.body.name) return next({ status: 400, message: "Missing name"})
-    ducks.push(req.body);
-    res.status(201).send(ducks);
+    duckModel.create(req.body).then(result => res.status(201).send(result)).catch(err => next(err));
 });
 
 
@@ -35,8 +35,7 @@ router.patch("/updateDuck/:id", (req, res) => {
 router.delete("/removeDuck/:id", deleteMiddleware, (req, res, next) => {
     const {id}  = req.params;
     console.log("ID:", id);
-    if (id > ducks.length) return next({ status: 404, message: `No duck found with id ${id}`});
-    res.send(ducks.splice(id));
+    duckModel.findByIdAndDelete(id).then(result => res.send(result)).catch(err => next(err));
 });
 
 
